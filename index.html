@@ -13,8 +13,8 @@
         <div id="menu">
             <h1 id="title"><b>Word Puzzle</b></h1>
             <div id="stats">
-                <h4>Previous Word: <i style="color: darkred;" id="prevWord">---</i></h4>
-                <h4>Time: <i style="color: darkred;" id="prevTime">00</i></h4>
+                <h4>Previous Word: <i style="color: #b80000;" id="prevWord">---</i></h4>
+                <h4>Time: <i style="color: #b80000;" id="prevTime">00</i></h4>
                 <h4>Best Time: <i style="color: blue;" id="bestTime">00</i></h4>
                 <button id="redoButton" onclick="redoGame()">Redo</button>
             </div>
@@ -27,7 +27,7 @@
             <button id="randomButton" onclick="randomGame()">Play Random</button>
         </div>
         <div id="play">        
-            <h3 id="timeContainer">Time: <i style="color: darkred;" id="timeLabel">---</i></h1>
+            <h3 id="timeContainer">Time: <i style="color: #b80000;" id="timeLabel">---</i></h1>
             <div id="container">---</div>
             <button id="resetButton" onclick="resetGame()">Reset (if stuck)</button>
         </div>
@@ -36,10 +36,12 @@
     <style>
 
         body {
+            background: linear-gradient(rgba(36, 233, 255, 0.5) 0%, #ffffff 45%);
             font-family: 'Montserrat', sans-serif;
             justify-content: center;
             text-align: center;
-            padding: 0%;
+            width: 100vw;
+            height: 100vh;
             cursor: default;
             user-select: none;
             overflow: hidden;
@@ -66,7 +68,7 @@
             padding: 20px 20px 30px 20px;
             margin: 30vh auto;
             transition: background 1s, border 1s;
-            border: darkred 3px solid;
+            border: #b80000 3px solid;
             width: fit-content;
             background: lightgrey;
         }
@@ -84,7 +86,7 @@
             padding: 0;
             margin: 0;
             display: inline-block;
-            font-size: 4.5vh;
+            font-size: 5vmax;
             transition: transform 0.8s, color 0.1s;
             transition-timing-function: ease-out;
             color: black;
@@ -95,24 +97,20 @@
     <script>
 
         colorsRainbow = ["#db0202","#e28317","#cfba0c","#3ae016","#21b0dd","#3e34d7","#7a31e8","#db24e3"];
-        randomWords = ["laptop", "bicycle", "sandwich", "notebook", "backpack", "umbrella","microwave", "television", "refrigerator", 
-        "calculator", "furniture","tablecloth", "newspaper", "basketball", "skateboard", "toothbrush","chocolate", "hamburger", 
-        "popcorn", "spaghetti", "headphones","telephone", "microscope", "binoculars", "dictionary", "cucumber","pineapple", "strawberry", 
-        "blueberries", "watermelon", "vegetables","avocado", "mangoes", "lighthouse", "newspaper", "sunglasses","earphones", "television", 
-        "carpet", "blanket", "fountain","container", "wheelchair", "candlestick", "backpack", "chandelier","typewriter", "projector", 
-        "sculpture", "shampoo", "hairbrush","paintbrush", "wardrobe", "cupboard", "microphone", "kettle","toaster", "batteries", 
-        "thermometer", "calculator", "furniture", "table", "chair", "pencil", "camera", "bottle", "carpet", "mirror", "basket", 
-        "bucket", "pillow", "blanket", "wallet", "glasses", "shampoo", "charger", "guitar", "laptop", "hammer", "helmet", "toaster", 
-        "batteries", "kettle", "cabinet", "notebook", "keychain", "candle", "fridge", "spoon", "fork", "plate", "tissue", "pocket", 
-        "scooter", "skates", "ladder", "marker", "locker", "stapler", "avocado", "banana", "burger", "cookie", "pancake", "popcorn", 
-        "pizza", "butter", "walnut", "peanuts", "almonds", "muffin", "noodles", "carrots", "mangoes", "grapes", "turnip", "onions", 
-        "tomato", "garlic", "pepper", "radish"];
+        randomWords = ["laptop", "bicycle", "sandwich", "notebook", "backpack", "umbrella", "microwave", "television", "popcorn", 
+        "spaghetti", "headphones", "telephone", "cucumber", "pineapple", "avocado", "mangoes", "sunglasses", "earphones", "carpet", 
+        "blanket", "container", "backpack", "projector", "sculpture", "shampoo", "wardrobe", "cupboard", "microphone", "kettle", 
+        "toaster", "batteries", "table", "pencil", "camera", "bottle", "carpet", "basket", "blanket", "wallet", "glasses", "shampoo", 
+        "charger", "guitar", "laptop", "toaster", "batteries", "kettle", "notebook", "keychain", "scooter", "skates", "marker", "locker", 
+        "stapler", "avocado", "banana", "burger", "cookie", "pancake", "popcorn", "pizza", "butter", "walnut", "peanuts", "almonds", 
+        "muffin", "noodles", "carrots", "mangoes", "grapes", "turnip", "onions", "tomato", "garlic", "pepper", "radish"];
 
         play = document.getElementById("play");
         menu = document.getElementById("menu");
         textInput = document.getElementById("textInput");
         container = document.getElementById("container");
         timeLabel = document.getElementById("timeLabel");
+        buttonPressGate = true;
         universalCheckItemIndex = 0;
         prevRainbowIndex = null;
         rainbowTrigger = null;
@@ -137,7 +135,7 @@
                 if(timer < 10){
                     timePrint = "0" + timer + "s";
                 }
-                if(timer > 15){
+                if(timer > 10){
                     document.getElementById("resetButton").style.opacity = 1;
                 }
                 timeLabel.innerText = timePrint;
@@ -188,7 +186,7 @@
                 container.style.border="black 3px dotted";
                 randomisePlaces(currentItem, b);
                 setTimeout(function(){
-                    container.style.background = "white";
+                    container.style.background = "#ffffff00";
                     timeLabel.style.color = "blue";
                     gameStatus = "Start";
                     let clickFunction = function(){
@@ -222,47 +220,51 @@
         }
 
         function startGame(){
-            timeLabel.innerText = "---";
-            clearInterval(rainbowTrigger);
-            clearEventListeners();
-            initialiseVariables();
-            if (gameStatus != "Redo" && gameStatus !== "Random" && gameStatus !== "Reset"){
-                inputWordSRC = textInput.value;
-            }
-            if (inputWordSRC.length < 5 || inputWordSRC.length > 10){
-                alert("Word should only have 5 to 10 characters!");
-                return;
-            } else if (/[^a-zA-Z\s]/.test(inputWordSRC)){
-                alert("Text should not contain numbers and special characters!");
-                return;
-            }
-            inputWord = inputWordSRC;
-            menu.style.opacity = 0;
-            document.getElementById("resetButton").style.opacity = 0;
-            
-            setTimeout(function(){
-                document.getElementById("prevWord").innerText = capitalise(inputWord);
-                textInput.value = "";
-                menu.style.display = "none";
-                play.style.display = "block";
+            if(buttonPressGate == true){
+                buttonPressGate = false;
+                timeLabel.innerText = "---";
+                clearInterval(rainbowTrigger);
+                clearEventListeners();
+                initialiseVariables();
+                if (gameStatus != "Redo" && gameStatus !== "Random" && gameStatus !== "Reset"){
+                    inputWordSRC = textInput.value;
+                }
+                if (inputWordSRC.length < 5 || inputWordSRC.length > 10){
+                    alert("Word should only have 5 to 10 characters!");
+                    return;
+                } else if (/[^a-zA-Z\s]/.test(inputWordSRC)){
+                    alert("Text should not contain numbers and special characters!");
+                    return;
+                }
+                inputWord = inputWordSRC;
+                menu.style.opacity = 0;
+                document.getElementById("resetButton").style.opacity = 0;
+                
                 setTimeout(function(){
-                    play.style.opacity = 1;
-                }, 40);
-                container.style.border = "darkred 3px solid";
-                container.style.background = "lightgray";
+                    buttonPressGate = true;
+                    document.getElementById("prevWord").innerText = capitalise(inputWord);
+                    textInput.value = "";
+                    menu.style.display = "none";
+                    play.style.display = "block";
+                    setTimeout(function(){
+                        play.style.opacity = 1;
+                    }, 40);
+                    container.style.border = "#b80000 3px solid";
+                    container.style.background = "lightgray";
 
-                for (a=0; a<inputWord.length; a++){
-                let letterInstance = inputWord[a]
-                    if (inputWord[a+1] === " "){
-                        initialArray.push("<p class='scalers'>" + letterInstance + "&nbsp;</p>");
-                    } else if (letterInstance !== " "){
-                        initialArray.push("<p class='scalers'>" + letterInstance + "</p>");
-                    }
-                }            
-                document.getElementById("container").innerHTML = initialArray.join("");
-                items = document.getElementsByClassName("scalers");
-                setTimeout(function(){pullOffDivs();}, 1000);
-            }, 500);
+                    for (a=0; a<inputWord.length; a++){
+                    let letterInstance = inputWord[a]
+                        if (inputWord[a+1] === " "){
+                            initialArray.push("<p class='scalers'>" + letterInstance + "&nbsp;</p>");
+                        } else if (letterInstance !== " "){
+                            initialArray.push("<p class='scalers'>" + letterInstance + "</p>");
+                        }
+                    }            
+                    document.getElementById("container").innerHTML = initialArray.join("");
+                    items = document.getElementsByClassName("scalers");
+                    setTimeout(function(){pullOffDivs();}, 1000);
+                }, 500);
+            }
         }
         
         function redoGame(){
@@ -297,6 +299,7 @@
                         if(finalIteration === items.length){
                             setTimeout(function(){
                                 clearInterval(timeTrigger);
+                                document.getElementById("resetButton").style.opacity = 0;
                                 timeLabel.style.color = "red";
                                 if (timer < bestTime || bestTime === 0){
                                     bestTime = timer;
@@ -313,14 +316,14 @@
                                 }
                                 document.getElementById("bestTime").innerText = bestTimePrint + "s";
                                 document.getElementById("prevTime").innerText = timePrint + "s";
-                                container.style.border="darkred 3px solid";
-                                document.getElementById("container").style.backgroundColor = "gold";
+                                container.style.border="#b80000 3px solid";
+                                container.style.background = "gold";
                                 gameStatus = "End";
                                 setTimeout(function(){
                                     for (i=0; i<items.length; i++){
                                         items[i].style.transition = "transform 0.05s, color 0.1s";
                                     }
-                                    document.getElementById("container").style.backgroundColor = "lightgray"; 
+                                    container.style.background = "lightgray"; 
                                     setTimeout(function(){
                                         rainbowTrigger = setInterval(function(){rainbowColor();}, 200);
                                         setTimeout(function(){
