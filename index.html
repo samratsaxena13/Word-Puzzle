@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Word Puzzle</title>
+        <meta name="viewport" content="user-scalable=no">
+        <link rel="icon" type="image/x-icon" href="favicon.png">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    </head>
+    <body>
+        <div id="menu">
+            <h1 id="title"><b>Word Puzzle</b></h1>
+            <div id="stats">
+                <h4>Previous Word: <i style="color: darkred;" id="prevWord">---</i></h4>
+                <h4>Time: <i style="color: darkred;" id="prevTime">00</i></h4>
+                <h4>Best Time: <i style="color: blue;" id="bestTime">00</i></h4>
+                <button id="redoButton" onclick="redoGame()">Redo</button>
+            </div>
+            <hr class="lineBreak">
+            <h3 class="subtitle">Type a word below</h3>
+            <input id="textInput" autocomplete="off">
+            <button id="goButton" onclick="startGame()">Play Input</button>
+            <hr class="lineBreak">
+            <h3 class="subtitle">Do a random word</h3>
+            <button id="randomButton" onclick="randomGame()">Play Random</button>
+        </div>
+        <div id="play">        
+            <h3 id="timeContainer">Time: <i style="color: darkred;" id="timeLabel">---</i></h1>
+            <div id="container">---</div>
+            <button id="resetButton" onclick="resetGame()">Reset (if stuck)</button>
+        </div>
+
+    </body>
+    <style>
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            justify-content: center;
+            text-align: center;
+            padding: 0%;
+            cursor: default;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        h1 {font-size: 9vh;}
+        h4 {font-size: 2vh;}
+        button, h3 {font-size: 3vh;}
+
+        #resetButton {transition: opacity 0.5s}
+
+        #menu {
+            transition: opacity 1s;
+        }
+
+        #play {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            margin: 10vh auto;
+        }
+
+        #container {
+            padding: 20px 20px 30px 20px;
+            margin: 30vh auto;
+            transition: background 1s, border 1s;
+            border: darkred 3px solid;
+            width: fit-content;
+            background: lightgrey;
+        }
+
+        #textInput {margin: 0vh 10px 1vh 0vh; font-size: 3vh; border: 0.1vh black solid;}
+
+        hr {width: 20vh; border: black 2px solid; margin-top: 2vh;}
+
+        #stats {
+            display: none;
+            margin: 0 auto;
+        }
+
+        .scalers {
+            padding: 0;
+            margin: 0;
+            display: inline-block;
+            font-size: 4.5vh;
+            transition: transform 0.8s, color 0.1s;
+            transition-timing-function: ease-out;
+            color: black;
+            line-height: 0.6;
+        }
+
+    </style>
+    <script>
+
+        colorsRainbow = ["#db0202","#e28317","#cfba0c","#3ae016","#21b0dd","#3e34d7","#7a31e8","#db24e3"];
+        randomWords = ["laptop", "bicycle", "sandwich", "notebook", "backpack", "umbrella","microwave", "television", "refrigerator", 
+        "calculator", "furniture","tablecloth", "newspaper", "basketball", "skateboard", "toothbrush","chocolate", "hamburger", 
+        "popcorn", "spaghetti", "headphones","telephone", "microscope", "binoculars", "dictionary", "cucumber","pineapple", "strawberry", 
+        "blueberries", "watermelon", "vegetables","avocado", "mangoes", "lighthouse", "newspaper", "sunglasses","earphones", "television", 
+        "carpet", "blanket", "fountain","container", "wheelchair", "candlestick", "backpack", "chandelier","typewriter", "projector", 
+        "sculpture", "shampoo", "hairbrush","paintbrush", "wardrobe", "cupboard", "microphone", "kettle","toaster", "batteries", 
+        "thermometer", "calculator", "furniture", "table", "chair", "pencil", "camera", "bottle", "carpet", "mirror", "basket", 
+        "bucket", "pillow", "blanket", "wallet", "glasses", "shampoo", "charger", "guitar", "laptop", "hammer", "helmet", "toaster", 
+        "batteries", "kettle", "cabinet", "notebook", "keychain", "candle", "fridge", "spoon", "fork", "plate", "tissue", "pocket", 
+        "scooter", "skates", "ladder", "marker", "locker", "stapler", "avocado", "banana", "burger", "cookie", "pancake", "popcorn", 
+        "pizza", "butter", "walnut", "peanuts", "almonds", "muffin", "noodles", "carrots", "mangoes", "grapes", "turnip", "onions", 
+        "tomato", "garlic", "pepper", "radish"];
+
+        play = document.getElementById("play");
+        menu = document.getElementById("menu");
+        textInput = document.getElementById("textInput");
+        container = document.getElementById("container");
+        timeLabel = document.getElementById("timeLabel");
+        universalCheckItemIndex = 0;
+        prevRainbowIndex = null;
+        rainbowTrigger = null;
+        timeTrigger = null;
+        clickFunctions = [];
+        finalisedArray = [];
+        finalIteration = 0;
+        indexColorItem = 0;
+        initialArray = [];
+        confirmItems = [];
+        gameStatus = "";
+        indexColor = 0;
+        items = [];
+        timer = -1;
+        bestTime = 0;
+        
+
+        function startTimer(){
+            timeTrigger = setInterval(function(){
+                timer++;
+                let timePrint = timer + "s";
+                if(timer < 10){
+                    timePrint = "0" + timer + "s";
+                }
+                if(timer > 15){
+                    document.getElementById("resetButton").style.opacity = 1;
+                }
+                timeLabel.innerText = timePrint;
+            },1000)
+        }
+
+        function capitalise(word){
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        function resetGame(){
+            gameStatus = "Reset";
+            clearInterval(timeTrigger);
+            timeLabel.style.color = "red";
+            setTimeout(function(){
+                play.style.opacity = 0;
+                setTimeout(startGame, 500);
+            },500)
+        }
+
+        function initialiseVariables(){
+            timer = -1;
+            universalCheckItemIndex = 0;
+            prevRainbowIndex = null;
+            finalisedArray = [];
+            finalIteration = 0;
+            indexColorItem = 0;
+            initialArray = [];
+            confirmItems = [];
+            indexColor = 0;
+        }
+
+        function clearEventListeners() {
+            for (let c = 0; c < items.length; c++) {
+                let currentItem = items[c];
+                currentItem.transition = "transform 0.8s, color 0.1s";
+                let clickFunctionInstance = clickFunctions[c];
+                if (clickFunctionInstance) {
+                    currentItem.removeEventListener("click", clickFunctionInstance);
+                }
+            }
+            clickFunctions = [];
+        }
+
+        function pullOffDivs(){
+            startTimer();
+            for(b=0; b<items.length; b++) {
+                let currentItem = items[b];
+                container.style.border="black 3px dotted";
+                randomisePlaces(currentItem, b);
+                setTimeout(function(){
+                    container.style.background = "white";
+                    timeLabel.style.color = "blue";
+                    gameStatus = "Start";
+                    let clickFunction = function(){
+                        if(currentItem === items[universalCheckItemIndex]){
+                                movebackItem(currentItem); 
+                                checkCompletion(currentItem);
+                                universalCheckItemIndex++;
+                        }
+                    }
+                    clickFunctions.push(clickFunction);
+
+                    currentItem.addEventListener("click", clickFunction);
+                    
+                    currentItem.addEventListener("mousemove", function(){
+                        if(gameStatus === "Start" && (confirmItems.includes(currentItem) !== true)){
+                            if(currentItem === items[universalCheckItemIndex]){
+                                currentItem.style.color = "greenyellow";
+                            } else {
+                                currentItem.style.color = "crimson";
+                            }
+                        }
+                    });
+
+                    currentItem.addEventListener("mouseout", function(){
+                        if(gameStatus === "Start"){
+                            currentItem.style.color="black";
+                        }
+                    });;
+                },1000);
+            }
+        }
+
+        function startGame(){
+            timeLabel.innerText = "---";
+            clearInterval(rainbowTrigger);
+            clearEventListeners();
+            initialiseVariables();
+            if (gameStatus != "Redo" && gameStatus !== "Random" && gameStatus !== "Reset"){
+                inputWordSRC = textInput.value;
+            }
+            if (inputWordSRC.length < 5 || inputWordSRC.length > 10){
+                alert("Word should only have 5 to 10 characters!");
+                return;
+            } else if (/[^a-zA-Z\s]/.test(inputWordSRC)){
+                alert("Text should not contain numbers and special characters!");
+                return;
+            }
+            inputWord = inputWordSRC;
+            menu.style.opacity = 0;
+            document.getElementById("resetButton").style.opacity = 0;
+            
+            setTimeout(function(){
+                document.getElementById("prevWord").innerText = capitalise(inputWord);
+                textInput.value = "";
+                menu.style.display = "none";
+                play.style.display = "block";
+                setTimeout(function(){
+                    play.style.opacity = 1;
+                }, 40);
+                container.style.border = "darkred 3px solid";
+                container.style.background = "lightgray";
+
+                for (a=0; a<inputWord.length; a++){
+                let letterInstance = inputWord[a]
+                    if (inputWord[a+1] === " "){
+                        initialArray.push("<p class='scalers'>" + letterInstance + "&nbsp;</p>");
+                    } else if (letterInstance !== " "){
+                        initialArray.push("<p class='scalers'>" + letterInstance + "</p>");
+                    }
+                }            
+                document.getElementById("container").innerHTML = initialArray.join("");
+                items = document.getElementsByClassName("scalers");
+                setTimeout(function(){pullOffDivs();}, 1000);
+            }, 500);
+        }
+        
+        function redoGame(){
+            gameStatus = "Redo";
+            setTimeout(function(){
+                startGame();
+            }, 500);
+        }
+        function randomGame(){
+            gameStatus = "Random";
+            inputWordSRC = randomWords[Math.floor(Math.random()*(randomWords.length))];
+            setTimeout(function(){
+                startGame();
+            }, 500);
+        }
+
+        function checkCompletion(item){
+            let bestTimePrint = "";
+            let timePrint = "";
+            if( ( (item.style.transform).includes("translate(0px)"))===true){
+                if (confirmItems.includes(item) !== true){
+                    confirmItems.push(item);
+                }
+            }
+            for (x=0; x < items.length; x++){
+                let currentItem = items[x];
+                for(y=0; y<confirmItems.length; y++){
+                    let subItem = confirmItems[y];
+                    if ((currentItem === subItem)&&(finalisedArray.includes(subItem) !== true)){
+                        finalisedArray.push(subItem);
+                        finalIteration++;
+                        if(finalIteration === items.length){
+                            setTimeout(function(){
+                                clearInterval(timeTrigger);
+                                timeLabel.style.color = "red";
+                                if (timer < bestTime || bestTime === 0){
+                                    bestTime = timer;
+                                }
+                                if (bestTime < 10){
+                                    bestTimePrint = "0" + bestTime;
+                                } else {
+                                    bestTimePrint = bestTime;
+                                }
+                                if (timer < 10){
+                                    timePrint = "0" + timer;
+                                } else {
+                                    timePrint = timer;
+                                }
+                                document.getElementById("bestTime").innerText = bestTimePrint + "s";
+                                document.getElementById("prevTime").innerText = timePrint + "s";
+                                container.style.border="darkred 3px solid";
+                                document.getElementById("container").style.backgroundColor = "gold";
+                                gameStatus = "End";
+                                setTimeout(function(){
+                                    for (i=0; i<items.length; i++){
+                                        items[i].style.transition = "transform 0.05s, color 0.1s";
+                                    }
+                                    document.getElementById("container").style.backgroundColor = "lightgray"; 
+                                    setTimeout(function(){
+                                        rainbowTrigger = setInterval(function(){rainbowColor();}, 200);
+                                        setTimeout(function(){
+                                            play.style.opacity = 0;
+                                            setTimeout(function(){
+                                                document.getElementById("stats").style.display = "block";
+                                                play.style.display = "none";
+                                                menu.style.display = "block";
+                                                setTimeout(function(){
+                                                    menu.style.transition = "opacity 1s";
+                                                    menu.style.opacity = 1;
+                                                }, 100);
+                                            },400);
+                                        }, 2000);
+                                    }, 500);
+                                },1000);
+                            }, 600);
+                        }
+                    }
+                }
+            }
+        }
+
+        function randomisePlaces(item, index){
+            let pixelIntX = Math.round(((Math.random()).toFixed(2))*10) + 5 + index/2;
+            let pixelIntY = Math.round(((Math.random()).toFixed(2))*15) + 5 + index/2;
+            let randomDisplacementX = Math.round(Math.random()*5) + index/2;
+            let randomDisplacementY = Math.round(Math.random()*5) + index/2;
+            let angleInt = Math.round(Math.random()*270);
+            let gate = Math.round(Math.random()*10);
+            if(gate%3 === 0){
+                pixelIntX = pixelIntX*(-1);
+                item.style.transform = "translate3d(" + (pixelIntX + randomDisplacementX) + "vw," + (pixelIntY + randomDisplacementY) + "vh, 100px) rotate(" + angleInt + "deg)" + " skew(30deg)";
+            } else if (gate%3 === 1) {
+                pixelIntY = pixelIntY*(-1);
+                item.style.transform = "translate3d(" + (pixelIntX + randomDisplacementX) + "vw," + (pixelIntY + randomDisplacementY) + "vh, -100px) rotate(" + angleInt + "deg)" + " skew(30deg)";
+            } else if (gate%3 === 2) {
+                angleInt = angleInt*(-1);
+                item.style.transform = "translate(" + (pixelIntX + randomDisplacementX) + "vw," + (pixelIntY + randomDisplacementY) + "vh) rotate(" + angleInt + "deg)" + " skew(30deg)";
+            }
+        }
+
+        function rainbowColor(){  
+           let rainbowIndex = Math.floor(Math.random()* items.length);
+           if (rainbowIndex != prevRainbowIndex){
+               prevRainbowIndex = rainbowIndex
+           } else if (rainbowIndex == prevRainbowIndex) {
+               if (rainbowIndex != 0){
+                   rainbowIndex = rainbowIndex - 1;
+               } else if (rainbowIndex == 0){
+                   rainbowIndex = rainbowIndex + 1;
+               }
+           }
+           let item = items[rainbowIndex];
+           item.style.color = colorsRainbow[indexColor];
+           item.style.transform = "scaleY(1.5)";
+           setTimeout(function(){movebackItem(item);}, 100);
+           indexColor++;
+           if (indexColor > (colorsRainbow.length - 1)){
+               indexColor = 0;
+           }
+        }
+
+        function movebackItem(item){
+            item.style.color="black";
+            item.style.transform = "scale(1, 1) skew(0deg) translate(0)";
+        }
+    </script>
+</html>
