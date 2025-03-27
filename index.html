@@ -271,16 +271,12 @@
         
         function redoGame(){
             gameStatus = "Redo";
-            setTimeout(function(){
-                startGame();
-            }, 500);
+            startGame();
         }
         function randomGame(){
             gameStatus = "Random";
             inputWordSRC = randomWords[Math.floor(Math.random()*(randomWords.length))];
-            setTimeout(function(){
-                startGame();
-            }, 500);
+            startGame();
         }
 
         function checkCompletion(item){
