@@ -231,9 +231,11 @@
                 }
                 if (inputWordSRC.length < 5 || inputWordSRC.length > 10){
                     alert("Word should only have 5 to 10 characters!");
+                    buttonPressGate = true;
                     return;
                 } else if (/[^a-zA-Z\s]/.test(inputWordSRC)){
                     alert("Text should not contain numbers and special characters!");
+                    buttonPressGate = true;
                     return;
                 }
                 inputWord = inputWordSRC;
